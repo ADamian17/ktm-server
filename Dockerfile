@@ -13,6 +13,8 @@ RUN yarn install
 # Copy the current directory contents into the container at /app
 COPY . /app
 
+RUN apt-get update -y && apt-get install -y openssl
+
 RUN yarn prisma generate
 
 CMD yarn start
