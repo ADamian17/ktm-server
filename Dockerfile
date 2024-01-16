@@ -13,6 +13,6 @@ RUN yarn install
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# RUN prisma generate
+RUN yarn prisma generate
 
-CMD ["yarn", "start"]
+CMD yarn start
