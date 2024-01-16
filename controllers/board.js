@@ -11,7 +11,7 @@ const { db } = require("../config");
  * @param {Request} req
  * @param {Response} res
  */
-const getAll = async (_req, res) => {
+const getAll = async (req, res) => {
   try {
     const boards = await db.board.findMany({
       orderBy: {
@@ -19,10 +19,10 @@ const getAll = async (_req, res) => {
       },
       include: {
         columns: true,
-        _count: true,
       },
     });
-    return res.json({ boards });
+
+    return res.json({ boards, count: req.body.resourceCount });
   } catch (error) {
     return res.json({ error });
   }

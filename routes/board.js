@@ -3,7 +3,7 @@ const router = express.Router();
 const { board } = require("../controllers");
 const limitResources = require("../middlewares/limitResources");
 
-router.get("/", board.getAll);
+router.get("/", limitResources, board.getAll);
 router.post("/", limitResources, board.create);
 router.get("/:uri", board.getOne);
 router.put("/update/:uri", board.update);
