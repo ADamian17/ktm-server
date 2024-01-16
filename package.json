@@ -5,7 +5,8 @@
   "author": "ADamian17 <adonisdesuvikdo@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon"
   },
   "dependencies": {
     "@prisma/client": "^5.8.1",

@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { board } = require("../controllers");
+const limitResources = require("../middlewares/limitResources");
 
 router.get("/", board.getAll);
-router.post("/", board.create);
+router.post("/", limitResources, board.create);
 router.get("/:uri", board.getOne);
 router.put("/update/:uri", board.update);
 router.delete("/delete/:id", board.destroy);
