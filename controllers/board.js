@@ -138,12 +138,21 @@ const update = async (req, res) => {
     return res.json({ updatedBoard });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        return res.status(400).json({
-          error: {
-            message: "Board name needs to be unique",
-          },
-        });
+      switch (error.code) {
+        case "P2002":
+          return res.status(400).json({
+            error: {
+              message: "Board name needs to be unique",
+            },
+          });
+        case "P2025":
+          return res.status(400).json({
+            error: {
+              message: "Record to delete does not exist.",
+            },
+          });
+        default:
+          break;
       }
     }
 
