@@ -18,7 +18,7 @@ const getAll = async (req, res) => {
         id: "desc",
       },
       include: {
-        columns: true,
+        _count: true,
       },
     });
 
@@ -35,7 +35,7 @@ const getAll = async (req, res) => {
  */
 const getOne = async (req, res) => {
   try {
-    const board = await db.board.findUnique({
+    const board = await db.board.findUniqueOrThrow({
       where: {
         uri: `/${req.params.uri}/`,
       },
@@ -54,6 +54,17 @@ const getOne = async (req, res) => {
 
     return res.json({ board });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return res.status(404).json({
+          status: 404,
+          error: {
+            message: "Board not found",
+          },
+        });
+      }
+    }
+
     return res.json({ error });
   }
 };
@@ -65,12 +76,6 @@ const getOne = async (req, res) => {
  */
 const create = async (req, res) => {
   try {
-    const boardsCount = await db.board.count({ take: 4 });
-
-    if (boardsCount >= 3) {
-      throw new Error("We are currently on Beta, only 3 boards are allow");
-    }
-
     const createdBoard = await db.board.create({
       data: {
         name: req.body.name,
@@ -161,6 +166,17 @@ const destroy = async (req, res) => {
 
     return res.json({ deletedBoard });
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      return res.status(400).json({
+        error: {
+          message: "Record to delete does not exist.",
+        },
+      });
+    }
+
     return res.status(400).json({ error });
   }
 };
