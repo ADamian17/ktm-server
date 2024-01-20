@@ -1,14 +1,14 @@
-const express = require('express');
-const cors = require('cors');
+const express = require("express");
+const cors = require("cors");
 
 /* == security == */
-const rateLimit = require('express-rate-limit');
-const helmet = require('helmet');
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
 
-require('dotenv').config();
+require("dotenv").config();
 
-const { db } = require('./config');
-const routes = require('./routes');
+const { db } = require("./config");
+const routes = require("./routes");
 
 const PORT = 8000;
 const app = express();
@@ -17,19 +17,16 @@ const app = express();
 const LIMIT = rateLimit({
   max: 10000,
   windowMs: 24 * 60 * 60 * 1000, // 1 day
-  message: 'Too many requests',
+  message: "Too many requests",
 });
 
 const corsOption = {
-  origin: [
-    process.env.FRONTEND_APP,
-    'http://localhost:3000',
-  ],
+  origin: [process.env.FRONTEND_APP, "http://localhost:3000"],
   optionsSuccessStatus: 200,
 };
 
-
 /* == Middleware == */
+app.set("trust proxy", 1);
 app.use(cors(corsOption));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -42,7 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send(`
   <html>
     <head>
@@ -56,10 +53,10 @@ app.get('/', (req, res) => {
 });
 
 /* NOTE API Routes */
-app.use('/api/v1/boards', routes.board);
+app.use("/api/v1/boards", routes.board);
 
 // Close Prisma client on app shutdown
-app.on('beforeExit', async () => {
+app.on("beforeExit", async () => {
   await db.$disconnect();
 });
 
