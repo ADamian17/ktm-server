@@ -1,17 +1,8 @@
-/**
- * @typedef {import('express').Request} Request
- * @typedef {import('express').Response} Response
- */
+import { RequestHandler } from "express";
+import { db } from "../config";
+import { Prisma } from "@prisma/client";
 
-const { Prisma } = require("@prisma/client");
-const { db } = require("../config");
-
-/**
- * @name getAll
- * @param {Request} req
- * @param {Response} res
- */
-const getAll = async (req, res) => {
+export const getAll: RequestHandler = async (req, res) => {
   try {
     const boards = await db.board.findMany({
       orderBy: {
@@ -28,12 +19,7 @@ const getAll = async (req, res) => {
   }
 };
 
-/**
- * @name getOne
- * @param {Request} req
- * @param {Response} res
- */
-const getOne = async (req, res) => {
+export const getOne: RequestHandler = async (req, res) => {
   try {
     const board = await db.board.findUniqueOrThrow({
       where: {
@@ -69,12 +55,7 @@ const getOne = async (req, res) => {
   }
 };
 
-/**
- * @name create
- * @param {Request} req
- * @param {Response} res
- */
-const create = async (req, res) => {
+export const create: RequestHandler = async (req, res) => {
   try {
     const createdBoard = await db.board.create({
       data: {
@@ -103,21 +84,9 @@ const create = async (req, res) => {
   }
 };
 
-/**
- * @name update
- * @param {Request} req
- * @param {Response} res
- */
-const update = async (req, res) => {
+export const update: RequestHandler = async (req, res) => {
   try {
-    const columnsData = req.body.columns.map((col) => ({
-      data: {
-        name: col.name,
-      },
-      where: {
-        id: col.id,
-      },
-    }));
+    const columnsData = req.body.columns.map((col: any) => ({ id: col.id }));
 
     const updatedBoard = await db.board.update({
       where: {
@@ -127,7 +96,11 @@ const update = async (req, res) => {
         name: req.body.name,
         uri: `/${req.body.name.toLowerCase().replace(/\s+/g, "-")}/`,
         columns: {
-          update: columnsData,
+          upsert: {
+            where: columnsData,
+            create: req.body.columns,
+            update: req.body.columns,
+          },
         },
       },
       include: {
@@ -137,6 +110,7 @@ const update = async (req, res) => {
 
     return res.json({ updatedBoard });
   } catch (error) {
+    console.log(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case "P2002":
@@ -160,12 +134,7 @@ const update = async (req, res) => {
   }
 };
 
-/**
- * @name destroy
- * @param {Request} req
- * @param {Response} res
- */
-const destroy = async (req, res) => {
+export const destroy: RequestHandler = async (req, res) => {
   try {
     const deletedBoard = await db.board.delete({
       where: {
@@ -188,12 +157,4 @@ const destroy = async (req, res) => {
 
     return res.status(400).json({ error });
   }
-};
-
-module.exports = {
-  getAll,
-  getOne,
-  create,
-  update,
-  destroy,
 };

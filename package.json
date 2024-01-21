@@ -5,8 +5,10 @@
   "author": "ADamian17 <adonisdesuvikdo@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon"
+    "start": "node dist/server.js",
+    "dev": "concurrently --handle-input -n server,ts -c 'bgGreen.bold,bgBlue.bold' 'npm:watch:nodemon' 'npm:watch:ts' rs",
+    "watch:nodemon": "nodemon dist/server.js",
+    "watch:ts": "tsc -w"
   },
   "dependencies": {
     "@prisma/client": "^5.8.1",
@@ -18,7 +20,9 @@
     "prisma": "^5.8.1"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "concurrently": "^8.2.2",
     "nodemon": "^3.0.2",
     "prettier": "^3.2.2"
   }

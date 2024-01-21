@@ -1,17 +1,18 @@
-const express = require("express");
-const cors = require("cors");
+import express, { Application } from "express";
+import cors from "cors";
+import dotenv from "dotenv";
 
 /* == security == */
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
-require("dotenv").config();
+import { routes } from "./routes";
+import { db } from "./config";
 
-const { db } = require("./config");
-const routes = require("./routes");
+dotenv.config();
 
 const PORT = 8000;
-const app = express();
+const app: Application = express();
 
 /* == rate limit == */
 const LIMIT = rateLimit({
@@ -21,7 +22,7 @@ const LIMIT = rateLimit({
 });
 
 const corsOption = {
-  origin: [process.env.FRONTEND_APP, "http://localhost:3000"],
+  origin: [process.env.FRONTEND_APP as string, "http://localhost:3000"],
   optionsSuccessStatus: 200,
 };
 
@@ -53,7 +54,7 @@ app.get("/", (req, res) => {
 });
 
 /* NOTE API Routes */
-app.use("/api/v1/boards", routes.board);
+app.use("/api/v1/", routes);
 
 // Close Prisma client on app shutdown
 app.on("beforeExit", async () => {
