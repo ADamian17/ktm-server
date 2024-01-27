@@ -100,33 +100,40 @@ export const create: RequestHandler = async (req, res) => {
 
 export const update: RequestHandler = async (req, res) => {
   try {
+    const data: Record<string, any> = {
+      name: req.body.name,
+      uri: `/${req.body.name.toLowerCase().replace(/\s+/g, "-")}/`,
+    };
+
     const columnsData = req.body.columns.map((col: any) => ({
       data: {
         name: col.name,
       },
       where: {
-        id: col.id,
+        id: Number(col.id),
       },
     }));
 
+    if (columnsData.length > 0) {
+      data.columns = {
+        update: columnsData,
+      };
+    }
+
     const updatedBoard = await db.board.update({
       where: {
-        id: req.body.boardId,
+        id: Number(req.body.boardId),
       },
-      data: {
-        name: req.body.name,
-        uri: `/${req.body.name.toLowerCase().replace(/\s+/g, "-")}/`,
-        columns: {
-          update: columnsData,
-        },
-      },
+      data,
       include: {
         columns: true,
       },
     });
 
-    return res.json({ updatedBoard });
+    return res.status(200).json({ updatedBoard });
   } catch (error) {
+    console.log(error);
+
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case "P2002":
