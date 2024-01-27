@@ -57,6 +57,15 @@ export const getOne: RequestHandler = async (req, res) => {
 
 export const create: RequestHandler = async (req, res) => {
   try {
+    const limit = Number(process.env.RESOURCES_LIMIT);
+    const boardCount = await db.board.count({
+      take: limit,
+    });
+
+    if (boardCount >= limit) {
+      throw new Error("User has reached the maximum number of records.");
+    }
+
     const createdBoard = await db.board.create({
       data: {
         name: req.body.name,
@@ -80,13 +89,25 @@ export const create: RequestHandler = async (req, res) => {
       }
     }
 
+    if (error instanceof Error) {
+      const { message } = error;
+      return res.status(400).json({ error: { message } });
+    }
+
     return res.status(400).json({ error });
   }
 };
 
 export const update: RequestHandler = async (req, res) => {
   try {
-    const columnsData = req.body.columns.map((col: any) => ({ id: col.id }));
+    const columnsData = req.body.columns.map((col: any) => ({
+      data: {
+        name: col.name,
+      },
+      where: {
+        id: col.id,
+      },
+    }));
 
     const updatedBoard = await db.board.update({
       where: {
@@ -96,11 +117,7 @@ export const update: RequestHandler = async (req, res) => {
         name: req.body.name,
         uri: `/${req.body.name.toLowerCase().replace(/\s+/g, "-")}/`,
         columns: {
-          upsert: {
-            where: columnsData,
-            create: req.body.columns,
-            update: req.body.columns,
-          },
+          update: columnsData,
         },
       },
       include: {
@@ -110,7 +127,6 @@ export const update: RequestHandler = async (req, res) => {
 
     return res.json({ updatedBoard });
   } catch (error) {
-    console.log(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case "P2002":
