@@ -7,3 +7,4 @@ export const routes = express.Router();
 
 routes.use("/boards", boardRouter);
 routes.use("/columns", columnRouter);
+routes.use("/subtasks", columnRouter);
