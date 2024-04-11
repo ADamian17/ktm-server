@@ -1,27 +1,59 @@
 import { RequestHandler } from "express";
 import { db } from "../config";
+import { Prisma } from "@prisma/client";
+
+export const getOne: RequestHandler = async (req, res) => {
+  try {
+    const task = await db.task.findUniqueOrThrow({
+      where: {
+        id: Number(req.params.id),
+      },
+      include: {
+        subtasks: true,
+      },
+    });
+
+    return res.json({ task });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return res.status(404).json({
+          status: 404,
+          error: {
+            message: "Task not found",
+          },
+        });
+      }
+    }
+
+    return res.json({ error });
+  }
+};
 
 export const create: RequestHandler = async (req, res) => {
   try {
     const limit = Number(process.env.RESOURCES_LIMIT);
-    const subtasks = await db.subtask.findMany({
+    const tasks = await db.task.findMany({
       where: {
-        taskId: req.body.taskId,
+        columnId: req.body.columnId,
       },
     });
 
-    if (subtasks.length >= limit) {
+    if (tasks.length >= limit) {
       throw new Error("User has reached the maximum number of records.");
     }
 
-    const createdSubtask = await db.subtask.create({
+    const createdTask = await db.task.create({
       data: {
         title: req.body.title,
-        taskId: req.body.taskId,
+        description: req.body.description,
+        columnId: req.body.columnId,
+        subtasks: req.body.subtasks || [],
+        status: req.body.columnName,
       },
     });
 
-    return res.status(201).json({ createdSubtask });
+    return res.status(201).json({ createdTask });
   } catch (error) {
     if (error instanceof Error) {
       const { message } = error;
@@ -56,13 +88,13 @@ export const update: RequestHandler = async (req, res) => {
 
 export const destroy: RequestHandler = async (req, res) => {
   try {
-    const deletedSubtask = await db.subtask.delete({
+    const deletedTask = await db.task.delete({
       where: {
         id: Number(req.params.id),
       },
     });
 
-    return res.status(200).json({ deletedSubtask });
+    return res.status(200).json({ deletedTask });
   } catch (error) {
     if (error instanceof Error) {
       const { message } = error;

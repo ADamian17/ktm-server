@@ -13,7 +13,9 @@ export const getAll: RequestHandler = async (req, res) => {
       },
     });
 
-    return res.json({ boards, count: req.body.resourceCount });
+    const data = { boards, count: boards.length };
+
+    return res.json(data);
   } catch (error) {
     return res.json({ error });
   }
